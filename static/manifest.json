@@ -1,6 +1,6 @@
 {
-  "name": "vue-rollcall",
-  "short_name": "vue-rollcall",
+  "name": "shilar",
+  "short_name": "MGEC",
   "icons": [
     {
       "src": "/static/img/icons/android-chrome-192x192.png",
@@ -15,6 +15,6 @@
   ],
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#000000",
+  "background_color": "#7644DD",
   "theme_color": "#7644DD"
 }
