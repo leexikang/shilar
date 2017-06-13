@@ -1,0 +1,49 @@
+<template>
+
+    <v-layout row wrap>
+      <v-flex xs12 sm6>
+        <v-menu
+          lazy
+          :close-on-content-click="false"
+          v-model="menu"
+          transition="v-scale-transition"
+          offset-y
+          :nudge-left="40"
+        >
+          <v-text-field
+            slot="activator"
+            label="Picker in menu"
+            v-model="e3"
+            prepend-icon="event"
+            readonly
+          ></v-text-field>
+
+          <v-date-picker v-model="e3" no-title scrollable actions>
+            <template scope="{ save, cancel }">
+              <v-card-row actions>
+                <v-btn flat primary @click.native="cancel()">Cancel</v-btn>
+                <v-btn flat primary @click.native="save()">Save</v-btn>
+              </v-card-row>
+            </template>
+          </v-date-picker>
+        </v-menu>
+      </v-flex>
+   </v-layout>
+
+</template>
+
+
+<script>
+import moment from "moment"
+
+export default{
+    data () {
+      return {
+        e3: moment().format("YYYY-MM-DD"),
+        menu: false,
+        modal: false,
+      }
+    }
+
+}
+</script>
