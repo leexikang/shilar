@@ -2,6 +2,7 @@
 <div>
     <auto-complete
     :names="names"
+    :fetching="fetching"
     @change="handleChange"
     @choose="handleChoose"
     @enter="handleEnter"
@@ -19,11 +20,22 @@
    	@save="handleSave"
    	ref="edit"
    	/>
+   	<br/>
+   	<router-link 
+   	:to="{name: 'TodayAttendance', 
+   	params: {
+   	date: $route.params.date,
+   	training: $route.params.name
+   	 }}">
+   	<v-btn success light router secondary raised> 
+   		Finish 
+   	</v-btn>
+   </router-link>
 
-   </div>
+</div>
 </template>
 <script>
-import {matches, map, keys, filter, differenceBy,keyBy, values } from 'lodash'
+import {debounce, matches, map, keys, filter, difference, differenceBy, keyBy, values } from 'lodash'
 import *  as api from '../api'
 import AutoComplete from './AutoComplete'
 import AttendanceList from './AttendanceList'
@@ -39,6 +51,8 @@ export default{
 			listenedEvent: [],
 			dialog: false,
 			editedUser: {},
+			members: [],
+			fetching: false
 
 		}
 	},
@@ -50,33 +64,65 @@ export default{
     },
     methods:{
     	handleChange(input){
+    		console.log(input)
+			const vm = this
+			if( input ){
+				this.fetching = true
+				api.fetch('members', {
+					orderByChild: 'name',
+					startAt: input,
+					endAt: input + '\uf8ff'
+				}).then(members => {
+					let matches = differenceBy(values(members), vm.attendees, 'key')
+					vm.names = map(matches, member => {
+						return 	member.name
+					})
+					this.fetching = false
+					if( input == ""){
+						this.names = []
+					}
 
-		const vm = this;
-			api.startAt('members', 'name', input)
-			.then(members => {
-			 let suggestions = differenceBy(values(members), vm.attendees, 'key')
-    		vm.names = map(suggestions, member => {
-    			return member.name
-    		})
-    	})
-    	.catch(val => console.log(val))
-    	},
-    	handleEnter(name){
+				})
+			}else{
+				this.names = []
+			}
+		},
+   		handleEnter(name){
     		
     		const date = this.$route.params.date
     		const vm = this
-    		api.equalTo('members', name)
+    		const training = this.$route.params.name
+    		api.fetch('members', {
+    			orderByChild: 'name',
+    			equalTo: name
+    		})
     		.then(member => {
     			if(member){
+    				console.log(member)
     				const key = keys(member)[0]
+    				if( member.trainings ){
+    					if(member.trainings[training]){
+    						api.post('members/' + key + '/trainings/' + name, true )
+    						api.post('trainings/' + training + '/members/' + key, true )
+    					}
+    				}else{
+    					console.log("Yo")
+    						api.post('members/' + key + '/trainings/' + name, true )
+    						api.post('trainings/' + training + '/members/' + key, true )
+    				}
+
     				api.post(vm.todayAttendanceNode(key), true)
     			}else{
     				// console.warn("No User By that name")
     				const key = api.uniqueKey(name)
     				api.post('members/' + key,{
     					name: name,
-    					key: key
+    					key: key,
+    					trainings:{
+    						[training]: true
+    					}
     				})
+    				api.post('trainings/' + training + '/members/' + key, true)
     				api.post(vm.todayAttendanceNode(key), true)
     			}
     		})
@@ -96,11 +142,11 @@ export default{
     		api.remove(this.todayAttendanceNode(attendee.key))
     	},
     	todayAttendanceNode(key){
+    		let base_url =  'attendances/' +this.$route.params.name +  '/' + this.$route.params.date 
     		if(key){
-    			return 'attendances/' + this.$route.params.date + "/" + key
-    		}else{
-    			return 'attendances/' + this.$route.params.date
+    			return base_url + '/' + key
     		}
+    			return base_url
     	},
     	handleCancel(){
     		this.dialog = false
@@ -133,18 +179,21 @@ export default{
     		
     		this.dialog = false
     	}
-
-
-
     },
     created(){
     	const vm = this
-    	api.fetchAndListen(this.todayAttendanceNode(), (member) =>{
-    		 // console.log(member)
-    		 // vm.$set(vm.attendees, member)
-    		 // console.log(vm.attendees)
+    	const name = this.$route.params.name
+    	let AttendeeKeyPath = 'trainings/' + this.$route.params.name + "/members"
+
+    	api.fetchAndListen(AttendeeKeyPath, "members", (member) =>{
+    		vm.members.push(member.name)
+    	})
+
+    	api.fetchAndListen(this.todayAttendanceNode(), "members", (member) =>{
+    		console.log(member)
     		 vm.attendees.push(member)
     	})
+
     	api.onRemove(this.todayAttendanceNode(), (member) =>{
     		 vm.attendees = filter(vm.attendees, (obj) => {
     		 	return obj.name !== member.name

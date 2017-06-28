@@ -24,7 +24,7 @@
         <v-divider></v-divider>
         <v-list-item v-for="item in items" :key="item">
 
-               <router-link :to="item.path">
+               <router-link :to="item.path" exact>
           <v-list-tile>
             <v-list-tile-action>
               <v-icon>{{ item.icon }}</v-icon>
@@ -56,8 +56,10 @@
       return {
         drawer: null,
         items: [
-          { name : 'Home', icon: 'dashboard', path: "home"},
-          { name : 'Attentances', icon: 'question_answer', path: "attendance"}
+          { name : 'Home', icon: 'dashboard', path: "/"},
+          { name : 'Attentances', icon: 'assignment', path: "/select"},
+          { name : 'Report', icon: 'assessment', path: "/report"},
+          { name : 'Users', icon: 'people', path: "/user/attendances"}
         ],
         mini: false,
         right: null

@@ -7,7 +7,6 @@
         <br/>
       <v-container fluid>
 
-        <div class="title">Click on sidebar to re-open.</div>
         <router-view></router-view>
 
         <!--v-router-->

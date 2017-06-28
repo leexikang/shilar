@@ -14,27 +14,63 @@ const listeners = []
 const db = firebase.initializeApp(config).database();
 const api = db.ref();
 
-export function fetch(child){
+export function fetch(child, query){
 	return new Promise((resolve, reject) => {
-		api.child(child).once('value', snapshot => {
+		let ref = api.child(child)	
+		if(query){
+			for (const key of Object.keys(query)) {
+				if(query[key]){
+					if(Array.isArray(query[key])){
+						ref = ref[key](...query[key])
+					}else{
+						ref = ref[key](query[key])	
+					}
+				}else{
+					ref = ref[key]()
+				}
+			}
+		}
+		ref.once('value', snapshot => {
 			const val = snapshot.val();
         resolve(val)
     }, reject)
 	})
 }
 
-
-export function fetchAndListen(node, cb){
-
-		 const ref = api.child(node)
-		 const listener = ref.on('child_added', snapshot =>{
-			let userRef = api.child('members').child( snapshot.key)
-			userRef.once('value', snap => {
-				let value = assign(snap.val(), {key: snapshot.key })
-				// console.log("add")
+export function nestedFetch(child, cb){
+		console.log("Path", child)
+		// let userRef = api.child('members').child( snapshot.key)
+		api.child(child).once('value', snapshot => {
+				// console.log(snapshot.val())
 				cb(value)
 			})
-			// console.log("reference",ref)
+}
+
+// export function test(child, cb){
+// 	let attendances = new Promise( (resolve, reject) => 
+// 		{
+// 			api.child(child).once('value', snapshot => {
+// 				// console.log(snapshot.val())
+// 				resolve(snapshot.val())
+// 			}, reject)
+// 		}
+// 	let attendees = new Promise((resolve, reject) =>{
+// 		api.child('attendances').once('value', snapshot => {
+// 			snapshot.val()	
+// 		})
+// 	}, reject)
+// 
+// }
+
+export function fetchAndListen(node, child, cb){
+
+	const ref = api.child(node)
+		 const listener = ref.on('child_added', snapshot =>{
+			let userRef = api.child(child).child( snapshot.key)
+			userRef.once('value', snap => {
+				let value = assign(snap.val(), {key: snapshot.key })
+				cb(value)
+			})
 			listeners.push([ref, 'child_added', listener])
 		})
 }
@@ -54,6 +90,15 @@ export function onRemove(node, cb){
 
 export function post(node, data){
 	return db.ref(node).set(data)
+}
+export function fetchOrCreate(node, data){
+	fetch(node)
+	.then( (value) => {
+		if(value){
+			return true
+		}
+		return post(node, data)
+	})	
 }
 
 export function update(node, data){

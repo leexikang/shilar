@@ -13,6 +13,11 @@
   </v-text-field>
   <v-card v-if="names.length > 0" class="upWard">
    <v-list>
+   <div class="text-xs-center" v-if="fetching">
+   <p >
+      <v-progress-circular indeterminate class="primary--text"></v-progress-circular>
+    </p>
+  </div>
     <v-list-item v-for="(name, index) in names" v-bind:key="index">
       <v-list-tile avatar ripple>
         <v-list-tile-content @mousedown.prevent="handleMouseDown(name)">
@@ -29,7 +34,10 @@
 <script>
   export default{
 
-    props: ["names"],
+    props: [
+    "names",
+    "fetching",
+    ],
     data () {
       return {
         input: "",
@@ -39,16 +47,11 @@
 
     },
       methods: {
-        getFocus(){
-
-          // this.$refs.input_2.focus()
-          // this.$refs.text_input.focus();
-        },
+        
         handleChange(input){
-          if( input ){
           this.$emit("change", input);
-        }
         },
+        
         handleMouseDown(name){
           // e.preventDefault()
           this.input =  name
