@@ -11,14 +11,23 @@
     ref="text_input"
     >
   </v-text-field>
-  <v-card v-if="names.length > 0" class="upWard">
+
+<div  v-if="names.length > 0">
+  <v-card class="upWard"  v-if="fetching">
+    <v-card-row>
+      <v-card-text>
+      <div >
+         <p class="text-xs-center">
+          <v-progress-circular indeterminate class="primary--text"></v-progress-circular>
+        </p>
+      </div>
+    </v-card-text>
+  </v-card-row>
+</v-card>
+
+<v-card class="upWard">
    <v-list>
-   <div class="text-xs-center" v-if="fetching">
-   <p >
-      <v-progress-circular indeterminate class="primary--text"></v-progress-circular>
-    </p>
-  </div>
-    <v-list-item v-for="(name, index) in names" v-bind:key="index">
+       <v-list-item v-for="(name, index) in names" v-bind:key="index">
       <v-list-tile avatar ripple>
         <v-list-tile-content @mousedown.prevent="handleMouseDown(name)">
           <v-list-tile-title>{{ name }}</v-list-tile-title>
@@ -28,6 +37,7 @@
     </v-list-item>
   </v-list>
 </v-card>
+</div>
 <br/><br/>
 </div>
 </template>
@@ -49,7 +59,11 @@
       methods: {
         
         handleChange(input){
-          this.$emit("change", input);
+          if(input){
+            this.$emit("change", input);
+          }else{
+            return
+          }
         },
         
         handleMouseDown(name){

@@ -12,6 +12,7 @@
 	<br/>
 	<auto-complete
 		:names="names"
+		:fetching="fetching"
 		@change="handleChange"
 		@choose="handleChoose"
 		@enter="handleEnter"
@@ -65,6 +66,7 @@ import * as api from '../api'
 export default{
 	data(){
 		return{
+			fetching: false,
 			training: null,
 			value: 0,
 			trainings: [],
@@ -112,18 +114,26 @@ export default{
 
 		handleChange(input){
 			const vm = this
-			api.fetch('members', {
-				orderByChild: 'name',
-				startAt: input,
-				endAt: input + '\uf8ff'
-			}).then(members => {
-				let matches = differenceBy(values(members), vm.attendees, 'key')
-				vm.names = map(matches, member => {
-					return 	member.name
+			this.fetching = true
+			if(input.length > 1){
+				api.fetch('members', {
+					orderByChild: 'name',
+					startAt: input,
+					endAt: input + '\uf8ff'
+				}).then(members => {
+					vm.names = map(members, member => {
+						return 	member.name
+					})
+					console.log(input)
+					vm.fetching = false
 				})
-			})
+			}else{
+				this.names = []
+			}
+			this.fetching = false
 		},
 		handleEnter(name){
+			this.attendances = []
 			this.names = []
 			const vm = this
 			let userKey = ""
@@ -147,7 +157,6 @@ export default{
 						})
 
 					})
-					console.log(vm.attendances)
 					vm.calculatePrecentate()
 					vm.selected = true
 				})
