@@ -10,8 +10,8 @@
       <td>{{ props.item.name }}</td>
       <td>{{ props.item.total}}</td>
 
-      <td class="text-xs-left" v-for="attendanceKey in props.item.date">
-      <v-icon large class="teal--text" v-if="props.item[attendanceKey]">done</v-icon>
+      <td class="text-xs-left" v-for="attendance in props.item.attendances">
+      <v-icon large class="teal--text" v-if="attendance">done</v-icon>
       <v-icon large class="pink--text accent-4" v-else>remove</v-icon>
       <!-- {{ props.item[attendanceKey] }} -->
       <!-- <span v-if="props.item[attendanceKey]">True</span> -->
@@ -24,7 +24,8 @@
 
 <script>
 import * as api from "../api"
-import { forEach, keys, includes, add } from "lodash"
+import axios from "axios"
+import { merge, forEach, keys, includes, add } from "lodash"
   export default {
     data () {
       return {
@@ -48,50 +49,33 @@ import { forEach, keys, includes, add } from "lodash"
       }
     },
     created(){
-    	// console.log(this.$route.params.name)
     	const training = this.$route.params.name
     	let vm = this
-    	
 
-    	let attendances = api.fetch("attendances/" + training)
-    	let members = api.fetch("members")
-    	Promise.all([attendances, members])
+    	// get Headers 
+    	api.fetch("attendances/" + training)
     	.then(val =>{
-    		let attendances = val[0]
-    		let attendees = val[1]
-    		forEach(keys(attendances), attendance =>{
-    			vm.headers.push({
-    				text: attendance,
-    				sortable: false,
-    				left: true,
-    				value: attendance
-    			})
-    		}) 
-
-    		forEach(attendees, (attendee, key) =>{
-	    			let attendeeList = {
-    				key: attendee.key,
-    				name: attendee.name,
-    				total: 0,
-    				date: []
-    			}	
-
-    			forEach(attendances, (attendance, num) =>{
-    				let attendancesKey= keys(attendance)
-    				if(includes(attendancesKey, key)){
-    					attendeeList.total = add(attendeeList.total, 1)
-    					attendeeList[num] = true
-    					attendeeList.date.push(num)
-
-    				}else{
-    					attendeeList[num] = false
-    					attendeeList.date.push(num)
-    				}
-    			})
-    			vm.items.push(attendeeList)
-    		})
-
+    		let headers = []
+    		 headers = (keys(val).map(date => {
+    		 	let obj = {}
+    			obj["text"] = date
+    			obj["left"] = true
+    			obj["value"] = date 
+    			return obj
+    		}))
+    		 this.headers = this.headers.concat(headers)
     	})
+    	//create attendances 
+    	const url = "https://us-central1-roll-call-ebc65.cloudfunctions.net/trainingReport"
+    	+ "?training=" + training
+    	axios.get(url)
+    	.then(val => {
+    		this.items = val.data
+    		console.log(val)
+    	}).catch(err =>{
+    		console.log(err)	
+    	})
+
 
 
 

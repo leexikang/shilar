@@ -3,13 +3,24 @@
 </template>
 
 <script>
+import axios from 'axios'
+import * as api from '../api'
 export default {
   name: 'hello',
   data () {
     return {
       msg: 'Welcome to Your Vue.js PWA'
     }
+  },
+  created(){
+    api.fetch("members", {
+      orderByChild: "trainings/shanyoma2017",
+      equalTo: true
+    }).then(val =>{
+      console.log(val)
+    })
   }
+
 }
 </script>
 
