@@ -6,10 +6,12 @@
         <v-list-item>
           <v-list-tile avatar tag="div">
             <v-list-tile-avatar>
-              <img src="https://randomuser.me/api/portraits/men/85.jpg" />
+              <img :src="user.photoURL" v-if="user"/>
+              <img src="https://randomuser.me/api/portraits/lego/1.jpg" v-else/>
             </v-list-tile-avatar>
             <v-list-tile-content>
-              <v-list-tile-title>John Leider</v-list-tile-title>
+              <v-list-tile-title v-if="user">{{ user.displayName }}</v-list-tile-title>
+              <v-list-tile-title v-else>John Leider</v-list-tile-title>
             </v-list-tile-content>
             <v-list-tile-action>
 
@@ -52,7 +54,8 @@
 
 <script>
   export default {
-    data () {
+  	props: ["user"],
+    data() {
       return {
         drawer: null,
         items: [

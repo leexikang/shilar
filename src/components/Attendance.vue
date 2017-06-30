@@ -102,12 +102,12 @@ export default{
     				const key = keys(member)[0]
     				if( member.trainings ){
     					if(member.trainings[training]){
-    						api.post('members/' + key + '/trainings/' + name, true )
+    						api.post('members/' + key + '/trainings/' + training , true )
     						api.post('trainings/' + training + '/members/' + key, true )
     					}
     				}else{
     					console.log("Yo")
-    						api.post('members/' + key + '/trainings/' + name, true )
+    						api.post('members/' + key + '/trainings/' + training, true )
     						api.post('trainings/' + training + '/members/' + key, true )
     				}
 

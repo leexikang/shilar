@@ -10,9 +10,39 @@ const config = {
 	messagingSenderId: "747259032069"
 };
 const listeners = []
+const provider = new firebase.auth.GoogleAuthProvider();
+provider.addScope('profile');
+provider.addScope('email');
+provider.addScope('https://www.googleapis.com/auth/plus.me');
+
 
 const db = firebase.initializeApp(config).database();
 const api = db.ref();
+let user = null
+export {user}
+
+
+export function signIn(){
+
+	return firebase.auth().signInWithPopup(provider).then(function(result) {
+		if (result.credential) {
+			var token = result.credential.accesstoken;
+		}
+		var token = result.credential.accesstoken;
+		user = result.user;
+
+	}).catch(function(error) {
+
+		var errorcode = error.code;
+		var errormessage = error.message;
+		var email = error.email;
+		var credential = error.credential;
+  // ...
+});
+}
+export function currentUser(callback){
+	firebase.auth().onAuthStateChanged(callback)
+}
 
 export function fetch(child, query){
 	return new Promise((resolve, reject) => {

@@ -1,7 +1,9 @@
 <template>
   <v-app>
 
-    <nav-bar />
+    <nav-bar 
+    :user="user"
+    />
         <main>
         <br/>
         <br/>
@@ -19,12 +21,29 @@
 
 <script>
 import Nav from './components/Nav'
+import {currentUser} from './api'
 
 export default {
   name: 'app',
+  data(){
+    return{
+      user: null
+    }
+  },
   components: {
     "nav-bar": Nav
   },
+  created(){
+    currentUser(user =>{
+      if(user){
+        console.log(user)
+        this.user = user
+      }else{
+        console.log("no user")
+      }
+
+    })
+  }
 }
 </script>
 
